@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MinIO.API.AppSettings;
+using MinIO.API.Services.Implementations;
+using MinIO.API.Services.Interfaces;
 
 namespace MinIO.API
 {
@@ -31,6 +34,10 @@ namespace MinIO.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SIMPLESTORAGE API", Version = "v1" });
             });
+
+            services.AddTransient<IMinioBucketService, MinioBucketService>();
+
+            services.AddSingleton(Configuration.GetSection("MinioSetting").Get<MinioSetting>());
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
