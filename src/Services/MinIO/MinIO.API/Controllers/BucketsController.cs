@@ -41,5 +41,12 @@ namespace MinIO.API.Controllers
             var result = await _bucketService.remove(bucketName);
             return Ok(result);
         }
+
+        [HttpGet("{bucketName}")]
+        public async Task<ActionResult> CheckBucket(string bucketName)
+        {
+            var result = await _bucketService.check(bucketName);
+            return Ok(result);
+        }
     }
 }
