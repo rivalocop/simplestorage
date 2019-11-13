@@ -36,6 +36,7 @@ namespace MinIO.API
             });
 
             services.AddTransient<IMinioBucketService, MinioBucketService>();
+            services.AddTransient<IMinioObjectService, MinioObjectService>();
 
             services.AddSingleton(Configuration.GetSection("MinioSetting").Get<MinioSetting>());
 
