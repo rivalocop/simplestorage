@@ -34,5 +34,12 @@ namespace MinIO.API.Controllers
             var result = await _bucketService.list();
             return Ok(result.ToString());
         }
+
+        [HttpDelete("{bucketName}")]
+        public async Task<ActionResult> DeleteBucket(string bucketName)
+        {
+            var result = await _bucketService.remove(bucketName);
+            return Ok(result);
+        }
     }
 }
