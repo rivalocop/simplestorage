@@ -27,5 +27,12 @@ namespace MinIO.API.Controllers
             var result = await _bucketService.create(bucketDto.BucketName);
             return Ok(result.ToString());
         }
+
+        [HttpGet]
+        public async Task<ActionResult> GetBuckets()
+        {
+            var result = await _bucketService.list();
+            return Ok(result.ToString());
+        }
     }
 }

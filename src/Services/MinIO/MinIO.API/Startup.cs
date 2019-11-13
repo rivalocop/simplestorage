@@ -38,6 +38,8 @@ namespace MinIO.API
             services.AddTransient<IMinioBucketService, MinioBucketService>();
 
             services.AddSingleton(Configuration.GetSection("MinioSetting").Get<MinioSetting>());
+
+            services.AddRouting(options => options.LowercaseUrls = true);
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 

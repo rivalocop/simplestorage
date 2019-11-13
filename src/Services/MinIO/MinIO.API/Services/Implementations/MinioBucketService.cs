@@ -85,6 +85,9 @@ namespace MinIO.API.Services.Implementations
                     bucketAsJson.Add("bucket_creation_date", bucket.CreationDateDateTime);
                     bucketAsJsonResult.Add(bucketAsJson);
                 }
+                result.Add("code", 200);
+                result.Add("response", "success");
+                result.Add("data", bucketAsJsonResult);
             }
             catch (MinioException ex)
             {
