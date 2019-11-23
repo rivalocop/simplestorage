@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +23,11 @@ namespace MinIO.API.Controllers
             this._objectService = objectService;
         }
 
-        [HttpPost]
+        [HttpPost, DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> PostObject([FromForm] ObjectDto objectCreation)
         {
-            var result = await _objectService.createObject(objectCreation.BucketName,
+            var result = await _objectService.CreateObject(objectCreation.BucketName,
                 objectCreation.ObjectName,
                 objectCreation.ObjectData.OpenReadStream(),
                 objectCreation.ObjectData.Length,
@@ -32,6 +35,20 @@ namespace MinIO.API.Controllers
             );
 
             return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetObject(string bucketName, string objectName)
+        {
+            var result = await _objectService.GetObject(bucketName, objectName);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }

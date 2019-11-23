@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.Exceptions;
 using MinIO.API.AppSettings;
@@ -21,7 +22,7 @@ namespace MinIO.API.Services.Implementations
             minioClient = new MinioClient(_setting.Endpoint, _setting.AccessKey, _setting.SecretKey);
         }
 
-        public async Task<JObject> createObject(string bucketName, string objectName, Stream inputStream, long size, string contentType)
+        public async Task<JObject> CreateObject(string bucketName, string objectName, Stream inputStream, long size, string contentType)
         {
             JObject result = new JObject();
             try
@@ -48,6 +49,29 @@ namespace MinIO.API.Services.Implementations
                 result.Add("message", e.Message);
             }
             return result;
+        }
+
+        public async Task<Stream> GetObject(string bucketName, string objectName)
+        {
+            Stream fileStream = new MemoryStream();
+            try
+            {
+                var metadata = await minioClient.StatObjectAsync(bucketName, objectName);
+                Console.WriteLine(metadata);
+
+                await minioClient.GetObjectAsync(bucketName, objectName,
+                 (stream) =>
+                {
+                    fileStream.Position = 0;
+                    stream.CopyTo(fileStream);
+                });
+            }
+            catch (MinioException e)
+            {
+
+                throw;
+            }
+            return fileStream;
         }
     }
 }

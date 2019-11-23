@@ -20,7 +20,7 @@ namespace MinIO.API.Services.Implementations
             minioClient = new MinioClient(_setting.Endpoint, _setting.AccessKey, _setting.SecretKey);
         }
 
-        public async Task<JObject> check(string bucketName)
+        public async Task<JObject> Check(string bucketName)
         {
             JObject result = new JObject();
             try
@@ -44,7 +44,7 @@ namespace MinIO.API.Services.Implementations
             return result;
         }
 
-        public async Task<JObject> create(string bucketName)
+        public async Task<JObject> Create(string bucketName)
         {
             JObject result = new JObject();
             try
@@ -71,7 +71,7 @@ namespace MinIO.API.Services.Implementations
             return result;
         }
 
-        public async Task<JObject> list()
+        public async Task<JObject> List()
         {
             JObject result = new JObject();
             try
@@ -96,7 +96,7 @@ namespace MinIO.API.Services.Implementations
             return result;
         }
 
-        public async Task<JObject> remove(string bucketName)
+        public async Task<JObject> Remove(string bucketName)
         {
             JObject result = new JObject();
             try

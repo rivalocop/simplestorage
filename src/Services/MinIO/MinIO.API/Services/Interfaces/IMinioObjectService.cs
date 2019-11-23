@@ -9,6 +9,7 @@ namespace MinIO.API.Services.Interfaces
 {
     public interface IMinioObjectService
     {
-        Task<JObject> createObject(string bucketName, string objectName, Stream inputStream, long size, string contentType);
+        Task<JObject> CreateObject(string bucketName, string objectName, Stream inputStream, long size, string contentType);
+        Task<Stream> GetObject(string bucketName, string objectName);
     }
 }
