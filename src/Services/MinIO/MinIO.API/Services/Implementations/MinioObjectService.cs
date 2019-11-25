@@ -68,7 +68,7 @@ namespace MinIO.API.Services.Implementations
             }
             catch (MinioException e)
             {
-
+                System.Console.WriteLine("New error will promt here {0}", e);
                 throw;
             }
             return fileStream;
