@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using S3.API.Services.Implementations;
 using S3.API.Services.Interfaces;
 using Amazon.S3;
+using Microsoft.OpenApi.Models;
 
 namespace S3.API
 {
@@ -28,7 +29,14 @@ namespace S3.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IS3Service, S3Service>();
+            services.AddTransient<IS3ObjectService, IS3ObjectService>();
             services.AddAWSService<IAmazonS3>();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "S3 API", Version = "v1" });
+            });
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
@@ -39,6 +47,17 @@ namespace S3.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "S3 API V1");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseMvc();
         }
