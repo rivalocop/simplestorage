@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:2.1-stretch AS build
 WORKDIR /src
-COPY ["MinIO/MinIO.API/MinIO.API.csproj", "MinIO/MinIO.API/"]
+COPY ["MinIO.API.csproj", "MinIO/MinIO.API/"]
 RUN dotnet restore "MinIO/MinIO.API/MinIO.API.csproj"
-COPY . .
-WORKDIR "/src/MinIO/MinIO.API"
+COPY . MinIO/MinIO.API/
+WORKDIR /src/MinIO/MinIO.API
 RUN dotnet build "MinIO.API.csproj" -c Release -o /app/build
 
 FROM build AS publish
