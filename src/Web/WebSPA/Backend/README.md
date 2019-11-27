@@ -1,2 +1,0 @@
-# WebBanHang---Backend
-WebBanHang - Backend
