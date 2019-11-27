@@ -7,11 +7,20 @@ const register = (req, res) => {
     let password = req.body.password;
     let email = req.body.email;
     if (name && email && password) {
-        UserModel.insert(name, email, password).then(data => {
-            res.json({
-                status: config.get('SUCCESS_STATUS'),
-                data: data
-            })
+        UserModel.find(name, email).then(data => {
+            if (data) {
+                res.json({
+                    status: config.get('ERROR_STATUS'),
+                    message: "Email or Username is exist"
+                })
+            } else {
+                UserModel.insert(name, email, password).then(data => {
+                    res.json({
+                        status: config.get('SUCCESS_STATUS'),
+                        data: data
+                    })
+                })
+            }
         })
     } else {
         res.json({
