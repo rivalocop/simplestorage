@@ -3,8 +3,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:44419",
-      "sslPort": 44349
+      "applicationUrl": "http://localhost:52347",
+      "sslPort": 0
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
@@ -17,8 +17,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "MinIO.API": {
+    "S3.API": {
       "commandName": "Project",
+      "launchUrl": "api/values",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -26,14 +27,9 @@
     },
     "Docker": {
       "commandName": "Docker",
+      "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/values",
-      "environmentVariables": {
-        "ASPNETCORE_URLS": "https://+:443;http://+:80",
-        "ASPNETCORE_HTTPS_PORT": "44350"
-      },
-      "httpPort": 44420,
-      "useSSL": true,
-      "sslPort": 44350
+      "httpPort": 52348
     }
   }
 }

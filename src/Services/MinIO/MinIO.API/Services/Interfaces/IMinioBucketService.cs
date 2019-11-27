@@ -7,9 +7,9 @@ namespace MinIO.API.Services.Interfaces
 {
     public interface IMinioBucketService
     {
-        Task<JObject>create(string bucketName);
-        Task<JObject> list();
-        Task<JObject> remove(string bucketName);
-        Task<JObject> check(string bucketName);
+        Task<JObject>Create(string bucketName);
+        Task<JObject> List();
+        Task<JObject> Remove(string bucketName);
+        Task<JObject> Check(string bucketName);
     }
 }

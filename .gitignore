@@ -351,3 +351,4 @@ MigrationBackup/
 src/Services/MinIO/MinIO.API/appsettings.json
 src/Services/MinIO/MinIO.API/appsettings.Development.json
 .vscode/
+.DS_Store

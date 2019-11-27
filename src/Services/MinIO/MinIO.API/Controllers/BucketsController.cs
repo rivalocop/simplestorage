@@ -24,28 +24,28 @@ namespace MinIO.API.Controllers
         [HttpPost]
         public async Task<ActionResult> PostBucket([FromBody]BucketDto bucketDto)
         {
-            var result = await _bucketService.create(bucketDto.BucketName);
+            var result = await _bucketService.Create(bucketDto.BucketName);
             return Ok(result.ToString());
         }
 
         [HttpGet]
         public async Task<ActionResult> GetBuckets()
         {
-            var result = await _bucketService.list();
+            var result = await _bucketService.List();
             return Ok(result.ToString());
         }
 
         [HttpDelete("{bucketName}")]
         public async Task<ActionResult> DeleteBucket(string bucketName)
         {
-            var result = await _bucketService.remove(bucketName);
+            var result = await _bucketService.Remove(bucketName);
             return Ok(result);
         }
 
         [HttpGet("{bucketName}")]
         public async Task<ActionResult> CheckBucket(string bucketName)
         {
-            var result = await _bucketService.check(bucketName);
+            var result = await _bucketService.Check(bucketName);
             return Ok(result);
         }
     }
