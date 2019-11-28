@@ -1,5 +1,5 @@
 const ObjectID = require('mongodb').ObjectID;
-
+const passwordHash = require('password-hash');
 const connection = require('./connection');
 
 const insert = (name, email, password) => {
@@ -8,7 +8,7 @@ const insert = (name, email, password) => {
             db.collection('users').insert({
                 name: name,
                 email: email,
-                password: password
+                password: passwordHash.generate(password)
             }, (err, data) => {
                 db.close();
                 if (err) {                    
@@ -44,15 +44,18 @@ const login = (name, password) => {
         connection(db => {
             db.collection('users').findOne({
                 name: name,
-                password: password
             }, (err, data) => {
                 db.close();
                 if (err) {                    
                     resolve(false);
                 } else {
                     if (data) {
-                        resolve(data);
-                    } else {
+                        if (passwordHash.verify(password, data.password)) {
+                            resolve(data);
+                        } else {
+                            resolve(false);
+                        }
+                    } else {                        
                         resolve(false);
                     }
                 }
@@ -83,9 +86,34 @@ const loginGmail = (email) => {
     })
 }
 
+const find = (name, email) => {
+    return new Promise((resolve, reject) => {
+        connection(db => {
+            db.collection('users').findOne({
+                 $or: [
+                        { name: name },
+                        { email: email } 
+                    ] 
+                }, (err, data) => {
+                db.close();
+                if (err) {                    
+                    resolve(false);
+                } else {
+                    if (data) {
+                        resolve(true);
+                    } else {                        
+                        resolve(false);
+                    }
+                }
+            })
+        })
+    })
+}
+
 module.exports = {
     insert,
     login,
     insertGmail,
-    loginGmail
+    loginGmail,
+    find
 }
