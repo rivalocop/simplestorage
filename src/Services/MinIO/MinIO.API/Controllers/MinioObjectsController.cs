@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MinIO.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class MinioObjectsController : ControllerBase
     {
@@ -38,31 +39,42 @@ namespace MinIO.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost, DisableRequestSizeLimit]
-        public async Task<ActionResult> PostMultiObject(CreateObjectsReq objectCreation)
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> PostMultiObject([FromForm]CreateObjectsReq objectCreation)
         {
+
             var result = new JObject();
-            for (int i = 0; i < objectCreation.ObjectNames.Count(); i++)
+            try
             {
+                for (int i = 0; i < objectCreation.ObjectNames.Count(); i++)
+                {
 
-                if (i == objectCreation.ObjectNames.Count() - 1)
-                {
-                    result = await _objectService.CreateObject(objectCreation.BucketName,
-                    objectCreation.ObjectNames[i],
-                    objectCreation.ObjectDatas[i].OpenReadStream(),
-                    objectCreation.ObjectDatas[i].Length,
-                    objectCreation.ObjectDatas[i].ContentType);
-                }else
-                {
-                    await _objectService.CreateObject(objectCreation.BucketName,
-                    objectCreation.ObjectNames[i],
-                    objectCreation.ObjectDatas[i].OpenReadStream(),
-                    objectCreation.ObjectDatas[i].Length,
-                    objectCreation.ObjectDatas[i].ContentType);
+                    if (i == objectCreation.ObjectNames.Count() - 1)
+                    {
+                        result = await _objectService.CreateObject(objectCreation.BucketName,
+                        objectCreation.ObjectNames[i],
+                        objectCreation.ObjectDatas[i].OpenReadStream(),
+                        objectCreation.ObjectDatas[i].Length,
+                        objectCreation.ObjectDatas[i].ContentType);
+                    }
+                    else
+                    {
+                        await _objectService.CreateObject(objectCreation.BucketName,
+                        objectCreation.ObjectNames[i],
+                        objectCreation.ObjectDatas[i].OpenReadStream(),
+                        objectCreation.ObjectDatas[i].Length,
+                        objectCreation.ObjectDatas[i].ContentType);
+                    }
+
                 }
-
             }
-
+            catch (Exception e)
+            {
+                result.Add("code", 201);
+                result.Add("response", "failed");
+                result.Add("message", e.Message);
+            }
             return Ok(result);
         }
 
@@ -95,7 +107,8 @@ namespace MinIO.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> DeleteMultiData(RemoveObjectsReq objReq)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> DeleteMultiData([FromForm] RemoveObjectsReq objReq)
         {
             var result = await _objectService.RemoveListObject(objReq.BucketName, objReq.ObjectNames);
             if (result != null)

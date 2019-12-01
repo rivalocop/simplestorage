@@ -33,6 +33,7 @@ namespace MinIO.API.Services.Implementations
                 {
                     await minioClient.MakeBucketAsync(bucketName);
                 }
+        
                 await minioClient.PutObjectAsync(bucketName, objectName, inputStream, size, contentType);
                 JObject data = new JObject();
                 data.Add("object_name", objectName);
@@ -81,7 +82,7 @@ namespace MinIO.API.Services.Implementations
         /// <param name="bucketName"></param>
         /// <param name="listObjectName"></param>
         /// <returns></returns>
-        public async Task<JObject> RemoveListObject(string bucketName, List<string> listObjectName)
+        public async Task<JObject> RemoveListObject(string bucketName, IEnumerable<string> listObjectName)
         {
             JObject result = new JObject();
             try
@@ -93,12 +94,14 @@ namespace MinIO.API.Services.Implementations
                     result.Add("response", "failed");
                     result.Add("message", "bucket not found");
                 }
-                await minioClient.RemoveObjectAsync(bucketName, listObjectName);
+                foreach(var objName in listObjectName)
+                {
+                    await minioClient.RemoveObjectAsync(bucketName, objName);
+                }
                 JObject data = new JObject();
                 result.Add("code", 200);
                 result.Add("response", "success");
                 result.Add("message", "List object has been removed!");
-                result.Add("data", data);
             }
             catch (MinioException e)
             {

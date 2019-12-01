@@ -12,7 +12,7 @@ namespace MinIO.API.Services.Interfaces
         Task<JObject> CreateObject(string bucketName, string objectName, Stream inputStream, long size, string contentType);
         Task<Stream> GetObject(string bucketName, string objectName);
         Task<JObject> RemoveObject(string bucketName, string objectName);
-        Task<JObject> RemoveListObject(string bucketName, List<string> listObjectName);
+        Task<JObject> RemoveListObject(string bucketName, IEnumerable<string> listObjectName);
 
 
     }
