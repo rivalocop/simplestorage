@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Minio.DataModel;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,6 @@ namespace MinIO.API.Services.Interfaces
         Task<Stream> GetObject(string bucketName, string objectName);
         Task<JObject> RemoveObject(string bucketName, string objectName);
         Task<JObject> RemoveListObject(string bucketName, IEnumerable<string> listObjectName);
-
-
+        Task<JObject> GetObjectStat(string bucketName, string objectName);
     }
 }

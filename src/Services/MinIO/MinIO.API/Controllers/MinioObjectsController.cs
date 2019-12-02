@@ -30,7 +30,7 @@ namespace MinIO.API.Controllers
         public async Task<ActionResult> PostObject([FromForm] ObjectDto objectCreation)
         {
             var result = await _objectService.CreateObject(objectCreation.BucketName,
-                objectCreation.ObjectName,
+                objectCreation.ObjectData.FileName,
                 objectCreation.ObjectData.OpenReadStream(),
                 objectCreation.ObjectData.Length,
                 objectCreation.ObjectData.ContentType
@@ -111,6 +111,20 @@ namespace MinIO.API.Controllers
         public async Task<ActionResult> DeleteMultiData([FromForm] RemoveObjectsReq objReq)
         {
             var result = await _objectService.RemoveListObject(objReq.BucketName, objReq.ObjectNames);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStatObject(string bucketName, string objectName)
+        {
+            var result = await _objectService.GetObjectStat(bucketName, objectName);
             if (result != null)
             {
                 return Ok(result);
