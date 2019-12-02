@@ -47,24 +47,24 @@ namespace MinIO.API.Controllers
             var result = new JObject();
             try
             {
-                for (int i = 0; i < objectCreation.ObjectNames.Count(); i++)
+                for (int i = 0; i < objectCreation.Files.Count(); i++)
                 {
 
-                    if (i == objectCreation.ObjectNames.Count() - 1)
+                    if (i == objectCreation.Files.Count() - 1)
                     {
                         result = await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.ObjectNames[i],
-                        objectCreation.ObjectDatas[i].OpenReadStream(),
-                        objectCreation.ObjectDatas[i].Length,
-                        objectCreation.ObjectDatas[i].ContentType);
+                        objectCreation.Files[i].FileName,
+                        objectCreation.Files[i].OpenReadStream(),
+                        objectCreation.Files[i].Length,
+                        objectCreation.Files[i].ContentType);
                     }
                     else
                     {
                         await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.ObjectNames[i],
-                        objectCreation.ObjectDatas[i].OpenReadStream(),
-                        objectCreation.ObjectDatas[i].Length,
-                        objectCreation.ObjectDatas[i].ContentType);
+                        objectCreation.Files[i].FileName,
+                        objectCreation.Files[i].OpenReadStream(),
+                        objectCreation.Files[i].Length,
+                        objectCreation.Files[i].ContentType);
                     }
 
                 }
