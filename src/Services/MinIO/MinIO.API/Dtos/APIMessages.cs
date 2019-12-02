@@ -21,7 +21,6 @@ namespace MinIO.API.Dtos
     public class CreateObjectsReq
     {
         public string BucketName { get; set; }
-        public List<string> ObjectNames { get; set; }
-        public List<IFormFile> ObjectDatas { get; set; }
+        public List<IFormFile> Files { get; set; }
     }
 }
