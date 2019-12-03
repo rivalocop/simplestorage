@@ -1,39 +1,119 @@
 <template>
   <div id="dashboard-wrapper">
-    <div class="container">
-      <div class="large-12 medium-12 small-12 cell">
-        <label>Files
-          <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()"/>
-        </label>
-        <button v-on:click="submitFiles()">Submit</button>
-      </div>
+    <BaseHeader @onChangeSearchText="onChangeSearchText"/>
+
+    <span class="go-top" @click="">
+      <base-material
+        :size="24"
+        class="upload-to-cloud-button"
+        name="backup"/>
+      <p class="upload-to-cloud-content">File Upload</p>
+      <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()"/>
+    </span>
+
+    <div class="main-content">
+      <ag-grid-vue style="width: 100%; height: 100%;" class="ag-theme-balham" id="myGrid"
+        :gridOptions="gridOptions"
+        :columnDefs="columnDefs"
+        :enableRangeSelection="true"
+        :allowContextMenuWithControlKey="true"
+        :getContextMenuItems="getContextMenuItems"
+        :modules="modules"
+        :rowData="mockFileListFilteredBySearchText"
+        :getRowHeight="getRowHeight"/>
+        </div>
     </div>
   </div>
 </template>
+
 <script>
-import axios from 'axios'
-export default {
-  data() {
-    return {
-      files: ''
-    };
-  },
-  methods: {
-    handleFilesUpload(){
-      this.files = this.$refs.files.files;
+
+  import axios from 'axios'
+  import _toLower from 'lodash/toLower'
+  import _cloneDeep from 'lodash/cloneDeep'
+  import BaseHeader from '@/components/common/base-header/BaseHeader';
+  import { AgGridVue } from "@ag-grid-community/vue";
+  import { AllModules } from "@ag-grid-enterprise/all-modules";
+  import "@ag-grid-community/all-modules/dist/styles/ag-grid.css";
+  import "@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
+
+  const MOCK_DATA = [
+          {
+            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
+            name: 'Co ban ve dien toan dam may.txt',
+            type: 'text/plain',
+            size: '993'
+          },
+          {
+            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
+            name: 'background.png',
+            type: 'image/png',
+            size: '5700111'
+          },
+          {
+            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
+            name: 'slide thuyet trinh',
+            type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            size: '4333000'
+          }
+        ]
+
+  export default {
+    name: 'Dashboard',
+    components: {
+      BaseHeader,
+      "ag-grid-vue": AgGridVue
     },
-    submitFiles(){
+    data() {
+      return {
+        files: '',
+        uploadPercentage: null,
+        gridOptions: null,
+        gridApi: null,
+        columnApi: null,
+        columnDefs: null,
+        modules: AllModules,
+        rowData: null,
+        getRowHeight: null,
+        mockFileListFilteredBySearchText: MOCK_DATA,
+        mockFileList: MOCK_DATA
+      };
+    },
+    beforeMount() {
+      this.gridOptions = {};
+      this.getRowHeight = params => {
+        return 40;
+      }
+      this.columnDefs = [
+        {headerName: 'Name', field: 'name', width: 538},
+        {headerName: 'Upload time', field: 'uploadTime', width: 238},
+        {headerName: 'File size', field: 'size', width: 118},
+        {headerName: 'Type', field: 'type', width: 238},
+      ]
+    },
+    mounted() {
+      this.gridApi = this.gridOptions.api;
+      this.gridColumnApi = this.gridOptions.columnApi;
+    },
+    methods: {
+      handleFilesUpload() {
+        debugger
+        this.files = this.$refs.files.files;
         let formData = new FormData();
-        for( var i = 0; i < this.files.length; i++ ) {
+        for( let i = 0; i < this.files.length; i++ ) {
           let file = this.files[i];
-          formData.append('files[' + i + ']', file);
+          formData.append('files[' + i + ']', file, file.name);
         }
-        axios.post( '/multiple-files',// pending
+
+        axios.post( '/multiple-files',// pending API upload
           formData,
           {
             headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+              'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: function( progressEvent ) {
+              this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ));
+            }.bind(this)
           }
         ).then(function(){
           console.log('SUCCESS!!');
@@ -41,12 +121,120 @@ export default {
         .catch(function(){
           console.log('FAILURE!!');
         });
-      }
+      },
+      onChangeSearchText(searchText) {
+        if (searchText) {
+          this.mockFileListFilteredBySearchText = this.mockFileList.filter(x => _toLower(x.name).includes(_toLower(searchText)))
+          return;
+        }
+        this.mockFileListFilteredBySearchText = this.mockFileList
+      },
+      getContextMenuItems(params) {
+        var result = [
+          "copy",
+          {
+            name: `Download`,
+            action: function() {
+              window.alert("Download pending");
+            },
+            icon: '<i class="material-icons" style="font-size: 20px; color: #056eff">cloud_download</i>'
+          },
+          {
+            name: "Remove",
+            action: function() {
+              window.alert("Delete pending");
+            },
+            icon: '<i class="material-icons" style="font-size: 24px; color: red">delete_forever</i>',
+          },
+        ];
+        return result;
+      },
+    }
+  };
+
+  function createFlagImg(flag) {
+    return '<img border="0" width="15" height="10" src="https://flags.fmcdn.net/data/flags/mini/' + flag + '.png"/>';
   }
-};
 </script>
 <style lang="scss">
-  
+#dashboard-wrapper {
+  height: 100%;
+  .go-top {
+    transition: width 0.2s;
+    position: fixed;
+    cursor: pointer;
+    bottom: 30px;
+    right: 30px;
+    width: 46px;
+    height: 46px;
+    border-radius: 23px;
+    background-color: #1155cb;
+    z-index: 500;
+    input[type=file] {
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+    }
+    .upload-to-cloud-button {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+    }
+    .upload-to-cloud-content {
+      display: none;
+    }
+    &:hover {
+      width: 140px;
+      border-radius: 23px;
+      .upload-to-cloud-button {
+        position: absolute;
+        left: 22%;
+        top: 46%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+      }
+      .upload-to-cloud-content {
+        font-family: "NotoSansCJKkr-Regular", "Apple SD Gothic", sans-serif;
+        font-size: 14px;
+        display: block;
+        position: absolute;
+        left: 80%;
+        top: 50%;
+        width: 85%;
+        transform: translate(-50%, -50%);
+        color: white;
+      }
+    }
+  }
+  .main-content {
+    height: 100%;
+    padding-top: 108px;
+    padding-bottom: 32px;
+    min-height: 520px;
+    overflow: auto;
+    min-width: 1024px;
+    #myGrid {
+      max-width: 1132px;
+      height: 100%;
+      padding: 22px;
+      margin: auto;
+      background-color: white;
+      padding: 0;
+      .ag-root {
+        &.ag-layout-normal {
+          border:none;
+          .ag-row {
+            height: 40px!important;
+          }
+        }
+      }
+    }
+  }
+}  
 </style>
-
-
