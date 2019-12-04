@@ -139,7 +139,7 @@ const sendEmail = function (user) {
     let token = getTokenLogin(userId);    
  	var data = {
         from: 'Administrator <me@samples.mailgun.org>',
-        to: 'phatminhthegioi@gmail.com',
+        to: `${user.email}`,
         subject: 'Verify account',
         text: `Hi, ${user.name}. Please confirm your email address by clicking on the link below.
         http://localhost:3007/users/verifyEmail/${token}`
