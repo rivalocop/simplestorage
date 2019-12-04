@@ -93,6 +93,19 @@ const loginGmail = (email) => {
     })
 }
 
+const checkUser = (userId) => {
+    return new Promise((resolve, reject) => {
+        connection(db => {
+            db.collection('users').findOne({
+				_id: new ObjectID(userId)
+            }, (err, data) => {
+                db.close();
+                resolve(err ? false : data);
+            })
+        })
+    })
+}
+
 const find = (name, email) => {
     return new Promise((resolve, reject) => {
         connection(db => {
@@ -103,15 +116,7 @@ const find = (name, email) => {
                 ] 
             }, (err, data) => {
                 db.close();
-                if (err) {                    
-                    resolve(false);
-                } else {
-                    if (data) {
-                        resolve(true);
-                    } else {                        
-                        resolve(false);
-                    }
-                }
+                resolve(err ? false : data);
             })
         })
     })
@@ -168,5 +173,6 @@ module.exports = {
     loginGmail,
     find,
     sendEmail,
-    verifyEmail
+    verifyEmail,
+    checkUser
 }

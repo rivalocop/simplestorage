@@ -3,7 +3,7 @@ var cryptLib = require('cryptlib');
 
 const UserModel = require('./../models/users.model');
 
-const register = (req, res) => {
+const register = (req, res) => {    
     let name = req.body.name;
     let password = req.body.password;
     let email = req.body.email;
@@ -80,6 +80,30 @@ const login = (req, res) => {
     }
 }
 
+const checkUser = (req, res) => {
+    let userId = req.body.id;
+    if (userId) {
+        UserModel.checkUser(userId).then(data => {
+            if (data) {
+                res.json({
+                    status: config.get('SUCCESS_STATUS'),
+                    data: data
+                })
+            } else {
+                res.json({
+                    status: config.get('ERROR_STATUS'),
+                    message: "Something went wrong"
+                })
+            }
+        })
+    } else {
+        res.json({
+            status: config.get('ERROR_STATUS'),
+            message: "UserId is requirred"
+        })
+    }
+}
+
 const loginGmail = (req, res) => {
     let email = req.body.email;
     if (email) {
@@ -147,5 +171,6 @@ module.exports = {
     register,
     login,
     loginGmail,
-    verifyEmail
+    verifyEmail,
+    checkUser
 }
