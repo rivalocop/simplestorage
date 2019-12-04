@@ -13,8 +13,10 @@ app.use((req, res, next) => {
 })
 
 const users = require('./routes/users');
+const upload = require('./routes/upload');
 
 app.use('/users', users);
+app.use('/upload', upload)
 
 app.listen(process.env.PORT, () => {
     console.log(`Listening on port ${process.env.PORT}`);
