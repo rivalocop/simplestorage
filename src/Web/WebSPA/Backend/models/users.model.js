@@ -1,5 +1,6 @@
 const ObjectID = require('mongodb').ObjectID;
 const passwordHash = require('password-hash');
+
 var api_key = 'be50061fbfda901da4a65c708161f130-f7910792-b56630ae';
 var domain = 'sandboxcf31503b6d51400697199e7ff1b6ba82.mailgun.org';
 var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
@@ -50,15 +51,18 @@ const login = (name, password) => {
         connection(db => {
             db.collection('users').findOne({
                 name: name,
-                password: password
             }, (err, data) => {
                 db.close();
                 if (err) {                    
                     resolve(false);
                 } else {
                     if (data) {
-                        resolve(data);
-                    } else {
+                        if (passwordHash.verify(password, data.password)) {
+                            resolve(data);
+                        } else {
+                            resolve(false);
+                        }
+                    } else {                        
                         resolve(false);
                     }
                 }

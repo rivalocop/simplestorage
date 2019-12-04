@@ -12,10 +12,8 @@ app.use((req, res, next) => {
     next();
 })
 
-const product = require('./routes/product');
 const users = require('./routes/users');
 
-app.use('/product', product);
 app.use('/users', users);
 
 app.listen(process.env.PORT, () => {

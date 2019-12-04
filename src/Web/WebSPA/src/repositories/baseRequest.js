@@ -1,12 +1,11 @@
 import axios from 'axios'
 
-const baseDomain = 'http://1.1.1.1:8080' // Khanh's domain
+const baseDomain = 'http://localhost:3007' // Binh's domain
 const baseURL = `${baseDomain}`
 
 export default axios.create({
   baseURL: baseURL,
   headers: {
-    Authorization: 'GSA ' + localStorage.getItem('accessToken'),
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/x-www-form-urlencoded'
   }
 })
