@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MinIO.API.Dtos;
 using MinIO.API.Services.Interfaces;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MinIO.API.Controllers
@@ -57,7 +58,7 @@ namespace MinIO.API.Controllers
                     {
                         objName.Add("object_name", obj.FileName);
                         objName.Add("message", "Object Exists");
-                        result.Add($"data{i}", new JObject(objName));
+                        //result.Add($"data{i}", new JObject(objName));
                         data.Add(objName);
                         i++;
                     }else
@@ -69,7 +70,8 @@ namespace MinIO.API.Controllers
                         obj.ContentType);
                         objName.Add("object_name", obj.FileName);
                         objName.Add("message", "Object has been created");
-                        result.Add($"data{i}", new JObject(objName));
+                        //result.Add($"data{i}", new JObject(objName));
+                        data.Add(objName);
                         i++;
                     }
 
@@ -83,7 +85,7 @@ namespace MinIO.API.Controllers
             }
             result.Add("code", 200);
             result.Add("response", "success");
-
+            result.Add("data", JsonConvert.SerializeObject(data));
             return Ok(result);
         }
 
