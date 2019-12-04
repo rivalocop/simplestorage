@@ -19,6 +19,10 @@ namespace MinIO.API
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseKestrel(options =>
+                {
+                    options.Limits.MaxRequestBodySize = long.MaxValue;
+                })
                 .UseStartup<Startup>();
     }
 }
