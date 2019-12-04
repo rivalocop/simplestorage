@@ -45,26 +45,32 @@ namespace MinIO.API.Controllers
         {
 
             var result = new JObject();
+            var data = new List<JObject>();
+            int i = 1;
             try
             {
-                for (int i = 0; i < objectCreation.Files.Count(); i++)
+                foreach(var obj in objectCreation.Files)
                 {
-
-                    if (i == objectCreation.Files.Count() - 1)
+                    var objName = new JObject();
+                    var getObjectName = await _objectService.GetObjectStat(objectCreation.BucketName, obj.FileName);
+                    if (getObjectName.GetValue("code") == null)
                     {
-                        result = await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.Files[i].FileName,
-                        objectCreation.Files[i].OpenReadStream(),
-                        objectCreation.Files[i].Length,
-                        objectCreation.Files[i].ContentType);
-                    }
-                    else
+                        objName.Add("object_name", obj.FileName);
+                        objName.Add("message", "Object Exists");
+                        result.Add($"data{i}", new JObject(objName));
+                        data.Add(objName);
+                        i++;
+                    }else
                     {
                         await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.Files[i].FileName,
-                        objectCreation.Files[i].OpenReadStream(),
-                        objectCreation.Files[i].Length,
-                        objectCreation.Files[i].ContentType);
+                        obj.FileName,
+                        obj.OpenReadStream(),
+                        obj.Length,
+                        obj.ContentType);
+                        objName.Add("object_name", obj.FileName);
+                        objName.Add("message", "Object has been created");
+                        result.Add($"data{i}", new JObject(objName));
+                        i++;
                     }
 
                 }
@@ -75,6 +81,9 @@ namespace MinIO.API.Controllers
                 result.Add("response", "failed");
                 result.Add("message", e.Message);
             }
+            result.Add("code", 200);
+            result.Add("response", "success");
+
             return Ok(result);
         }
 
