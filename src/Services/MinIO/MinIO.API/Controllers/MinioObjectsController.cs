@@ -45,28 +45,39 @@ namespace MinIO.API.Controllers
         {
 
             var result = new JObject();
+            var data = new List<JObject>();
+            int i = 1;
             try
             {
-                for (int i = 0; i < objectCreation.Files.Count(); i++)
+                foreach(var obj in objectCreation.Files)
                 {
-
-                    if (i == objectCreation.Files.Count() - 1)
+                    var objName = new JObject();
+                    var getObjectName = await _objectService.GetObjectStat(objectCreation.BucketName, obj.FileName);
+                    if (getObjectName != null)
                     {
-                        result = await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.Files[i].FileName,
-                        objectCreation.Files[i].OpenReadStream(),
-                        objectCreation.Files[i].Length,
-                        objectCreation.Files[i].ContentType);
-                    }
-                    else
+                        objName.Add("object_name", obj.FileName);
+                        result.Add($"data{i}", new JObject(objName));
+                        data.Add(objName);
+                        i++;
+                    }else
                     {
                         await _objectService.CreateObject(objectCreation.BucketName,
-                        objectCreation.Files[i].FileName,
-                        objectCreation.Files[i].OpenReadStream(),
-                        objectCreation.Files[i].Length,
-                        objectCreation.Files[i].ContentType);
+                        obj.FileName,
+                        obj.OpenReadStream(),
+                        obj.Length,
+                        obj.ContentType);
+                        objName.Add("object_name", obj.FileName);
+                        result.Add($"data{i}", new JObject(objName));
+                        i++;
                     }
 
+                }
+                if (data.Count() == objectCreation.Files.Count())
+                {
+                    result.Add("code", 201);
+                    result.Add("response", "failed");
+                    result.Add("message", "Object Exists");
+                    return Ok(result);
                 }
             }
             catch (Exception e)
@@ -75,6 +86,10 @@ namespace MinIO.API.Controllers
                 result.Add("response", "failed");
                 result.Add("message", e.Message);
             }
+            result.Add("code", 200);
+            result.Add("response", "success");
+            result.Add("message", "List object has been created.");
+
             return Ok(result);
         }
 
