@@ -53,9 +53,10 @@ namespace MinIO.API.Controllers
                 {
                     var objName = new JObject();
                     var getObjectName = await _objectService.GetObjectStat(objectCreation.BucketName, obj.FileName);
-                    if (getObjectName != null)
+                    if (getObjectName.GetValue("code") == null)
                     {
                         objName.Add("object_name", obj.FileName);
+                        objName.Add("message", "Object Exists");
                         result.Add($"data{i}", new JObject(objName));
                         data.Add(objName);
                         i++;
@@ -67,17 +68,11 @@ namespace MinIO.API.Controllers
                         obj.Length,
                         obj.ContentType);
                         objName.Add("object_name", obj.FileName);
+                        objName.Add("message", "Object has been created");
                         result.Add($"data{i}", new JObject(objName));
                         i++;
                     }
 
-                }
-                if (data.Count() == objectCreation.Files.Count())
-                {
-                    result.Add("code", 201);
-                    result.Add("response", "failed");
-                    result.Add("message", "Object Exists");
-                    return Ok(result);
                 }
             }
             catch (Exception e)
@@ -88,7 +83,6 @@ namespace MinIO.API.Controllers
             }
             result.Add("code", 200);
             result.Add("response", "success");
-            result.Add("message", "List object has been created.");
 
             return Ok(result);
         }
