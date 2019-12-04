@@ -56,9 +56,9 @@ namespace MinIO.API.Services.Implementations
 
         public async Task<Stream> GetObject(string bucketName, string objectName)
         {
-            Stream fileStream = new MemoryStream();
             try
             {
+                Stream fileStream = new MemoryStream();
                 var metadata = await minioClient.StatObjectAsync(bucketName, objectName);
                 Console.WriteLine(metadata);
 
@@ -68,13 +68,14 @@ namespace MinIO.API.Services.Implementations
                     fileStream.Position = 0;
                     stream.CopyTo(fileStream);
                 });
+                fileStream.Seek(0, SeekOrigin.Begin);
+                return fileStream;
             }
             catch (MinioException e)
             {
                 System.Console.WriteLine("New error will promt here {0}", e);
                 throw;
             }
-            return fileStream;
         }
 
         public async Task<JObject> GetObjectStat(string bucketName, string objectName)

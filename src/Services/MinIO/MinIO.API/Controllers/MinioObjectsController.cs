@@ -88,12 +88,12 @@ namespace MinIO.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetObject(string bucketName, string objectName)
+        public async Task<IActionResult> GetObject(string bucketName, string objectName)
         {
             var result = await _objectService.GetObject(bucketName, objectName);
             if (result != null)
             {
-                return Ok(result);
+                return File(result, "application/octet-stream");
             }
             else
             {
