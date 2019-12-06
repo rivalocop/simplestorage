@@ -50,12 +50,7 @@
       </b-row>
       <b-form-group class="mt-4">
         <b-form-input
-          v-model="usernameRegister" size="lg"
-          type="text" required placeholder="Username"
-          class="mb-4"
-        />
-        <b-form-input
-          v-model="mailRegister" size="lg"
+          v-model="userNameRegister" size="lg"
           type="text" required placeholder="Username"
           class="mb-4"
         />
@@ -66,7 +61,12 @@
         />
         <b-form-input
           v-model="passwordRegisterConfirm" size="lg"
-          type="password" required placeholder="ConfirmPassword"
+          type="password" required placeholder="Confirm Password"
+          class="mb-4"
+        />
+        <b-form-input
+          v-model="mailRegister" size="lg"
+          type="text" required placeholder="Mail register"
           class="mb-r5"
         />
         <g-signin-button
@@ -87,12 +87,16 @@
   </div>
 </template>
 <script>
+
+import { RepositoryFactory } from "./../../repositories/repositoryFactory";
+const LoginRepository = RepositoryFactory.get("login");
+
 export default {
   data() {
     return {
       username: "",
       password: "",
-      usernameRegister: "",
+      userNameRegister: "",
       mailRegister: "",
       passwordRegister: "",
       passwordRegisterConfirm: "",
@@ -105,28 +109,87 @@ export default {
   },
   methods: {
     login() {
-      let data = {
-        username: this.username,
+      let payload = {
+        name: this.username,
         password: this.password
       };
       if (this.username === "") {
-        this.errorMessage = "Please enter username"
+        this.$toasted.error('Please enter username', {
+          position: 'top-center',
+          duration: 2000
+        })
+        return;
+      } else if (this.password === "") {
+        this.$toasted.error('Please enter password', 
+        {
+          position: 'top-center',
+          duration: 2000,
+          singleton: true
+        })
         return;
       }
-      if (this.password === "") {
-        this.errorMessage = "Please enter password"
-        return;
-      }
+      LoginRepository.login(payload)
+        .then(res => {
+          console.log(res)
+          //localStorage.setItem("userID", token);
+          //localStorage.setItem("userName", response.data.eJobTitle);
+        })
+        .catch(err => {
+          console.log(err)
+        });
     },
     register() {
-
+      let payload = {
+        name: this.userNameRegister,
+        password: this.passwordRegister,
+        email: this.mailRegister
+      };
+      if (this.userNameRegister === '') {
+        this.$toasted.error('Please enter username', {
+          position: 'top-center',
+          duration: 2000
+        })
+        return;
+      } else if (this.passwordRegister === '') {
+        this.$toasted.error('Please enter password', 
+        {
+          position: 'top-center',
+          duration: 2000,
+          singleton: true
+        })
+        return;
+      } else if (this.passwordRegisterConfirm !== this.passwordRegister) {
+        this.$toasted.error('Password does not match', 
+        {
+          position: 'top-center',
+          duration: 2000,
+          singleton: true
+        })
+        return;
+      } else if (this.mailRegister === '') {
+        this.$toasted.error('Please enter your email', 
+        {
+          position: 'top-center',
+          duration: 2000,
+          singleton: true
+        })
+        return;
+      }
+      LoginRepository.register(payload)
+        .then(res => {
+          console.log(res)
+          
+        })
+        .catch(err => {
+          console.log(err)
+        });
     },
     onSignInSuccess (googleUser) {
       const profile = googleUser.getBasicProfile()
       console.log(profile)
     },
     onSignInError (error) {
-      console.log('OH NOES', error)
+
     },
     onClickCreateAccount() {
       this.canShowFormLogin = false

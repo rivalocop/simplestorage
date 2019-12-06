@@ -36,6 +36,8 @@
   import { AllModules } from "@ag-grid-enterprise/all-modules";
   import "@ag-grid-community/all-modules/dist/styles/ag-grid.css";
   import "@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
+  import dayjs from 'dayjs'
+
 
   const MOCK_DATA = [
           {
@@ -76,8 +78,30 @@
         rowData: null,
         getRowHeight: null,
         mockFileListFilteredBySearchText: MOCK_DATA,
-        mockFileList: MOCK_DATA
       };
+    },
+    created() {
+      this.mockFileListFilteredBySearchText = MOCK_DATA.map(f => {
+        return {
+          uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
+          name: f.name,
+          type: f.type,
+          size: f.size
+        }
+      })
+    },
+    computed: {
+      // mockFileListFilteredBySearchText() {
+      //   let result = rawData.map(f => {
+      //     return {
+      //       uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
+      //       name: f.name,
+      //       type: f.type,
+      //       size: f.size
+      //     }
+      //   })
+      //   return result
+      // }
     },
     beforeMount() {
       this.gridOptions = {};
@@ -85,10 +109,10 @@
         return 40;
       }
       this.columnDefs = [
-        {headerName: 'Name', field: 'name', width: 538},
-        {headerName: 'Upload time', field: 'uploadTime', width: 238},
-        {headerName: 'File size', field: 'size', width: 118},
-        {headerName: 'Type', field: 'type', width: 238},
+        {headerName: 'Name', field: 'name', width: 538, sortable: true},
+        {headerName: 'Upload time', field: 'uploadTime', width: 238, sortable: true},
+        {headerName: 'File size', field: 'size', width: 118, sortable: true},
+        {headerName: 'Type', field: 'type', width: 238, sortable: true},
       ]
     },
     mounted() {
@@ -124,7 +148,7 @@
       },
       onChangeSearchText(searchText) {
         if (searchText) {
-          this.mockFileListFilteredBySearchText = this.mockFileList.filter(x => _toLower(x.name).includes(_toLower(searchText)))
+          this.mockFileListFilteredBySearchText = this.mockFileList.filter(x => _toLower(x.name).includes(_toLower(searchText))) // mockFileList --> rawData //pending
           return;
         }
         this.mockFileListFilteredBySearchText = this.mockFileList

@@ -1,7 +1,6 @@
 import axios from 'axios'
 
-const baseDomain = 'http://localhost:3007' // Binh's domain
-const baseURL = `${baseDomain}`
+const baseURL = `http://localhost:3007/users`
 
 export default axios.create({
   baseURL: baseURL,
