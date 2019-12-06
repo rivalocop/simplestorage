@@ -74,8 +74,59 @@ const getListFileByUserId = (req, res) => {
     }
 }
 
+const insertBucket = (req, res) => {    
+    let userId = req.body.userId;
+    let bucket = req.body.bucket;
+    if (userId) {
+        UploadModel.insertBucket(userId, bucket).then(data => {
+            if (data) {
+                res.json({
+                    status: config.get('SUCCESS_STATUS'),
+                    data: data
+                })
+            } else {
+                res.json({
+                    status: config.get('ERROR_STATUS'),
+                    message: "Something went wrong"
+                })
+            }
+        })
+    } else {
+        res.json({
+            status: config.get('ERROR_STATUS'),
+            message: "UserId is requirred"
+        })
+    }
+}
+
+const getBucketById = (req, res) => {
+    let bucketId = req.params.bucketId;
+    if (bucketId) {
+        UploadModel.getBucketById(bucketId).then(data => {
+            if (data) {
+                res.json({
+                    status: config.get('SUCCESS_STATUS'),
+                    data: data
+                })
+            } else {
+                res.json({
+                    status: config.get('ERROR_STATUS'),
+                    message: "Something went wrong"
+                })
+            }
+        })
+    } else {
+        res.json({
+            status: config.get('ERROR_STATUS'),
+            message: "BucketId is requirred"
+        })
+    }
+}
+
 module.exports = {
     insertFile,
     getListFileByUserId,
-    deleteFile
+    deleteFile,
+    insertBucket,
+    getBucketById
 }

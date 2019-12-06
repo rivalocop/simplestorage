@@ -66,8 +66,41 @@ const getListFileByUserId = (userId) => {
     })
 }
 
+const insertBucket = (userId, bucket) => {
+    return new Promise((resolve, reject) => {
+        connection(db => {
+            db.collection('bucket').insert({
+                userId: userId,
+                bucket: bucket
+            }, (err, data) => {
+                db.close();
+                if (err) {                    
+                    resolve(false);
+                } else {
+                    resolve(data.ops[0]);
+                }
+            })
+        })
+    })
+}
+
+const getBucketById = (id) => {
+    return new Promise((resolve, reject) => {
+        connection(db => {
+            db.collection('bucket').findOne({
+				_id: new ObjectID(id)
+            }, (err, data) => {
+                db.close();
+                resolve(err ? false : data);
+            })
+        })
+    })
+}
+
 module.exports = {
     insertFile,
     getListFileByUserId,
-    deleteFile
+    deleteFile,
+    insertBucket,
+    getBucketById
 }
