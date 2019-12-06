@@ -152,6 +152,7 @@ const sendEmail = function (user) {
 
     return new Promise(function (resolve, reject) {
     	mailgun.messages().send(data, function (error, body) {
+            console.log(error)
 	        resolve(error ? false : true);
 	    });
     })
