@@ -1,12 +1,10 @@
-import downloadFormRepository from './Repositories/downloadFormRepository'
-import downloadReportRepository from './Repositories/downloadReportRepository'
+import LoginRepository from './Repositories/LoginRepository'
 
 const repositories = {
   // add your repository here and set "name" to get
   // "name" : repository name
   // only use for Authorization call
-  download: downloadFormRepository,
-  downloadReport: downloadReportRepository
+  login: LoginRepository
 }
 
 export const RepositoryFactory = {
