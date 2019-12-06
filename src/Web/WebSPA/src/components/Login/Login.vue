@@ -24,15 +24,15 @@
           class="mb-r5"
           @keyup.enter="login()"
         />
-        <g-signin-button
-          :params="googleSignInParams"
-          @success="onSignInSuccess"
-          @error="onSignInError"
-        >
-          Sign in with Google
-        </g-signin-button>
-        <b-row align-h="between" align-v="center" no-gutters class="mt-2">
           <a>Forgot your password?</a>
+        <b-row align-h="between" align-v="center" no-gutters class="mt-2">
+          <g-signin-button
+            :params="googleSignInParams"
+            @success="onSignInSuccess"
+            @error="onSignInError"
+          >
+            Sign in with Google
+          </g-signin-button>
           <b-button variant="primary" @click.prevent="login()">
             Login
           </b-button>
@@ -69,15 +69,15 @@
           type="text" required placeholder="Mail register"
           class="mb-r5"
         />
-        <g-signin-button
-          :params="googleSignInParams"
-          @success="onSignInSuccess"
-          @error="onSignInError"
-        >
-          Sign in with Google
-        </g-signin-button>
+        <a @click="backToLogin">Back to login</a>
         <b-row align-h="between" align-v="center" no-gutters class="mt-2">
-          <a @click="backToLogin">Back to login</a>
+          <g-signin-button
+            :params="googleSignInParams"
+            @success="onSignInSuccess"
+            @error="onSignInError"
+          >
+            Sign in with Google
+          </g-signin-button>
           <b-button variant="primary" @click.prevent="register()">
             Register
           </b-button>
@@ -130,12 +130,28 @@ export default {
       }
       LoginRepository.login(payload)
         .then(res => {
-          console.log(res)
-          //localStorage.setItem("userID", token);
-          //localStorage.setItem("userName", response.data.eJobTitle);
+          if(res.data.status) {
+            localStorage.setItem("userID", res.data.data._id);
+            localStorage.setItem("userName", res.data.data.name);
+            this.$router.push('/Dashboard')
+          } else {
+            this.$toasted.error('Wrong Username or Password', 
+            {
+              position: 'top-center',
+              duration: 2000,
+              singleton: true
+            })
+            return;
+          }
         })
         .catch(err => {
-          console.log(err)
+          this.$toasted.error('Server: error', 
+          {
+            position: 'top-center',
+            duration: 2000,
+            singleton: true
+          })
+          return;
         });
     },
     register() {
@@ -178,18 +194,46 @@ export default {
       LoginRepository.register(payload)
         .then(res => {
           console.log(res)
-          
         })
         .catch(err => {
-          console.log(err)
+          this.$toasted.error('Register failed', 
+          {
+            position: 'top-center',
+            duration: 2000,
+            singleton: true
+          })
+          return;
         });
     },
     onSignInSuccess (googleUser) {
       const profile = googleUser.getBasicProfile()
-      console.log(profile)
+      let payload = {
+        email: profile.U3
+      }
+      LoginRepository.loginWithGmail(payload)
+        .then(res => {
+          localStorage.setItem("userID", res.data.data._id);
+          localStorage.setItem("userName", profile.ig);
+          this.$router.push('Dashboard')
+        })
+        .catch(err => {
+          this.$toasted.error('Server: Error', 
+          {
+            position: 'top-center',
+            duration: 2000,
+            singleton: true
+          })
+          return;
+        });
     },
     onSignInError (error) {
-
+      this.$toasted.error('Login failed', 
+        {
+          position: 'top-center',
+          duration: 2000,
+          singleton: true
+        })
+        return;
     },
     onClickCreateAccount() {
       this.canShowFormLogin = false
@@ -217,7 +261,7 @@ export default {
       position: absolute;
       height: 400px;
       width: 450px;
-      top: 100px;
+      top: 7%;
       left: calc(50% - 225px);
       .cloud-icon {
         background-image: url("./../../assets/cloud-icon.png");
@@ -236,11 +280,10 @@ export default {
       .g-signin-button {
         cursor: pointer;
         display: inline-block;
-        padding: 4px 8px;
+        padding: 9px 13px;
         border-radius: 3px;
         background-color: #3c82f7;
         color: #fff;
-        box-shadow: 0 3px 0 #0f69ff;
       }
     }
   }
