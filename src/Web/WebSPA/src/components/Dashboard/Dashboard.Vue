@@ -1,8 +1,11 @@
 <template>
-  <div id="dashboard-wrapper">
-    <BaseHeader @onChangeSearchText="onChangeSearchText"/>
+  <div id="dashboard-wrapper" v-if="canShowDashboard">
+    <BaseHeader
+      :user-name="userName"
+      @onChangeSearchText="onChangeSearchText"
+    />
 
-    <span class="go-top" @click="">
+    <span class="go-top">
       <base-material
         :size="24"
         class="upload-to-cloud-button"
@@ -20,8 +23,8 @@
         :getContextMenuItems="getContextMenuItems"
         :modules="modules"
         :rowData="mockFileListFilteredBySearchText"
-        :getRowHeight="getRowHeight"/>
-        </div>
+        :getRowHeight="getRowHeight"
+      />
     </div>
   </div>
 </template>
@@ -37,6 +40,8 @@
   import "@ag-grid-community/all-modules/dist/styles/ag-grid.css";
   import "@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
   import dayjs from 'dayjs'
+  import { RepositoryFactory } from "./../../repositories/repositoryFactory";
+  const LoginRepository = RepositoryFactory.get("login");
 
 
   const MOCK_DATA = [
@@ -68,6 +73,8 @@
     },
     data() {
       return {
+        canShowDashboard: false,
+        userName: 'user',
         files: '',
         uploadPercentage: null,
         gridOptions: null,
@@ -81,6 +88,24 @@
       };
     },
     created() {
+      this.userName = localStorage.getItem("userName");
+      let payload = {
+        userID: localStorage.getItem("userID")
+      }
+      LoginRepository.checkUser(payload)
+        .then(res => {
+          console.log(res)
+          if (res.data.status) {
+            this.canShowDashboard = true
+          } else {
+            localStorage.removeItem('userID');
+            localStorage.removeItem('userName');
+            this.$router.push('/SignIn')
+          }
+        })
+        .catch(err => {
+          this.$router.push('SignIn')
+        });
       this.mockFileListFilteredBySearchText = MOCK_DATA.map(f => {
         return {
           uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
@@ -148,10 +173,10 @@
       },
       onChangeSearchText(searchText) {
         if (searchText) {
-          this.mockFileListFilteredBySearchText = this.mockFileList.filter(x => _toLower(x.name).includes(_toLower(searchText))) // mockFileList --> rawData //pending
+          this.mockFileListFilteredBySearchText = MOCK_DATA.filter(x => _toLower(x.name).includes(_toLower(searchText))) // mockFileList --> rawData //pending
           return;
         }
-        this.mockFileListFilteredBySearchText = this.mockFileList
+        this.mockFileListFilteredBySearchText = MOCK_DATA
       },
       getContextMenuItems(params) {
         var result = [

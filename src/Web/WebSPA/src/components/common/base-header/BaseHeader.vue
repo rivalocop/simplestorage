@@ -44,7 +44,7 @@
         >
           <template slot="button-content">
             <span class="font-family-notosanscjkkr-medium font-12 user-name">
-              haigv
+              {{ userName }}
             </span>
           </template>
           <b-dropdown-item-button @click="logout">
@@ -64,6 +64,12 @@
 
   export default {
     name: 'BaseHeader',
+      props: {
+      userName: {
+        type: String,
+        required: true
+      }
+    },
     data () {
       return {
         inputSearch: ''
@@ -76,7 +82,9 @@
     },
     methods:{
       logout() {
-
+        localStorage.removeItem('userID');
+        localStorage.removeItem('userName');
+        this.$router.push('/SignIn')
       }
     },
   };
