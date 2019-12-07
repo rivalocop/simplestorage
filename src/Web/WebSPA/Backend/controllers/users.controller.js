@@ -1,5 +1,6 @@
 const config = require('config');
-var cryptLib = require('cryptlib');
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('myTotalySecretKey');
 
 const UserModel = require('./../models/users.model');
 
@@ -137,10 +138,7 @@ const verifyEmail = (req, res) => {
     if (userId) {
         UserModel.verifyEmail(userId).then(data => {
             if (data) {
-                res.json({
-                    status: config.get('SUCCESS_STATUS'),
-                    data: data
-                })
+                res.json("Your account is verified")
             } else {
                 res.json({
                     status: config.get('ERROR_STATUS'),
@@ -157,8 +155,7 @@ const verifyEmail = (req, res) => {
 const decryptToken = (token) => {
 	if (token) {
 		try {
-			let key = cryptLib.getHashSha256('token', 32);
-			return cryptLib.decrypt(token, key);
+			return cryptr.decrypt(token);
 		} catch (error) {
 			return null;
 		}

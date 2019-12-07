@@ -1,12 +1,20 @@
 const ObjectID = require('mongodb').ObjectID;
 const passwordHash = require('password-hash');
-
-var api_key = 'be50061fbfda901da4a65c708161f130-f7910792-b56630ae';
-var domain = 'sandboxcf31503b6d51400697199e7ff1b6ba82.mailgun.org';
-var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
-var cryptLib = require('cryptlib');
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('myTotalySecretKey');
 
 const connection = require('./connection');
+// main.js
+var nodemailer = require('nodemailer');
+
+const option = {
+    service: 'gmail',
+    auth: {
+        user: 'phatminhthegioi@gmail.com', // email hoặc username
+        pass: 'dmrhbqddhuuvfdbq' // password
+    }
+};
+var transporter = nodemailer.createTransport(option);
 
 const insert = (name, email, password) => {
     return new Promise((resolve, reject) => {
@@ -141,27 +149,33 @@ const verifyEmail = (userId) => {
 
 const sendEmail = function (user) {    
     let userId = user._id.toString();
-    let token = getTokenLogin(userId);    
- 	var data = {
-        from: 'Administrator <me@samples.mailgun.org>',
-        to: `${user.email}`,
-        subject: 'Verify account',
-        text: `Hi, ${user.name}. Please confirm your email address by clicking on the link below.
-        http://localhost:3007/users/verifyEmail/${token}`
-    };
-
+    let token = getTokenLogin(userId);
     return new Promise(function (resolve, reject) {
-    	mailgun.messages().send(data, function (error, body) {
-            console.log(error)
-	        resolve(error ? false : true);
-	    });
+    transporter.verify(function(error, success) {
+        // Nếu có lỗi.
+        if (error) {
+            console.log(error);
+            resolve(false)
+        } else { //Nếu thành công.
+            var mail = {
+                from: 'phatminhthegioi@gmail.com', // Địa chỉ email của người gửi
+                to: `${user.email}`,
+                subject: 'Verify account',
+                text: `Hi, ${user.name}. Please confirm your email address by clicking on the link below.
+                http://localhost:3007/users/verifyEmail/${token}`
+            };
+            //Tiến hành gửi email
+                transporter.sendMail(mail, function(error, info) {
+                    resolve(error ? false : true);
+                });
+            }
+        });
     })
 }
 
 const getTokenLogin = (val) => {
     if (val) {
-        let key = cryptLib.getHashSha256('token', 32);
-        return cryptLib.encrypt(val, key);
+        return cryptr.encrypt(val);
     }   
     
     return '';
