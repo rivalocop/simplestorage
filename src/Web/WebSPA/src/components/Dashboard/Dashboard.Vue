@@ -46,28 +46,6 @@
   const qs = require('qs');
   const FileDownload = require('js-file-download');
 
-
-  const MOCK_DATA = [
-          {
-            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
-            name: 'Co ban ve dien toan dam may.txt',
-            type: 'text/plain',
-            size: '993'
-          },
-          {
-            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
-            name: 'background.png',
-            type: 'image/png',
-            size: '5700111'
-          },
-          {
-            uploadTime: 'Sun Dec 01 2019 03:21:12 GMT+0700 (Indochina Time)',
-            name: 'slide thuyet trinh',
-            type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            size: '4333000'
-          }
-        ]
-
   export default {
     name: 'Dashboard',
     components: {
@@ -78,6 +56,7 @@
       return {
         canShowDashboard: false,
         userName: 'user',
+        listFileRawData: null,
         userID: null,
         files: '',
         uploadPercentage: null,
@@ -89,7 +68,7 @@
         modules: AllModules,
         rowData: null,
         getRowHeight: null,
-        mockFileListFilteredBySearchText: MOCK_DATA,
+        mockFileListFilteredBySearchText: [],
       };
     },
     created() {
@@ -136,25 +115,7 @@
         .catch(err => {
           this.$router.push('SignIn')
         });
-
-      let getFileListPayload = {
-        userId: this.userID
-      }
-      manageStorage.getListFileByUserId(getFileListPayload)
-        .then(res => {
-          console.log(res)
-        })
-        .catch(err => {
-          console.log(err, 'server: getListFileByUserId')
-        })
-      this.mockFileListFilteredBySearchText = MOCK_DATA.map(f => {
-        return {
-          uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
-          name: f.name,
-          type: f.type,
-          size: f.size
-        }
-      })
+        this.fetchFileList()
     },
     computed: {
 
@@ -186,6 +147,7 @@
     methods: {
       handleFilesUpload() {
         debugger
+        console.log(this.userID)
         this.files = this.$refs.files.files;
         let formData = new FormData();
         formData.append('Files', this.files[0]);
@@ -201,33 +163,47 @@
               this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ));
             }.bind(this)
           }
-        ).then(function() {
+        ).then(res => {
           let insertFilePayload = {
             userId: this.userID,
-            listFile : [
-              {
-                fileID: createID(),
-                name: this.files[0].name,
-                type: this.files[0].type,
-                size: this.files[0].size,
-                uploadTime: dayjs(this.files[0].lastModified).format("DD-MM-YYYY"),
-              }
-            ]
+            listFile : [{
+              name: this.files[0].name,
+              type: this.files[0].type,
+              size: this.files[0].size,
+              uploadTime: dayjs(new Date()).format("DD-MM-YYYY"),
+            }]
           }
-          this.$toasted.success('Upload successfully', 
-            {
-              position: 'top-center',
-              duration: 2000,
-              singleton: true
+          manageStorage.insertFile(insertFilePayload)
+            .then(res => {
+              console.log(res)
+              if(res.data.status) {
+                this.fetchFileList()
+                this.$toasted.success('Upload successfully', 
+                  {
+                    position: 'top-center',
+                    duration: 2000,
+                    singleton: true
+                  })
+                  return;
+              }
+              this.$toasted.error('Upload successfully', 
+                {
+                  position: 'top-center',
+                  duration: 2000,
+                  singleton: true
+                })
+                return;
             })
-            return;
-          // manageStorage.insertFile(insertFilePayload)
-          //   .then(res => {
-          //     console.log(res)
-          //   })
-          //   .catch(err => {
-          //     console.log('Binh: failed')
-          //   })
+            .catch(err => {
+              console.log('Binh: failed')
+              this.$toasted.error('Upload successfully', 
+                {
+                  position: 'top-center',
+                  duration: 2000,
+                  singleton: true
+                })
+                return;
+            })
         })
         .catch(err => {
           console.log(err, 'FAILURE!!');
@@ -235,10 +211,10 @@
       },
       onChangeSearchText(searchText) {
         if (searchText) {
-          this.mockFileListFilteredBySearchText = MOCK_DATA.filter(x => _toLower(x.name).includes(_toLower(searchText))) // mockFileList --> rawData //pending
+          this.mockFileListFilteredBySearchText = this.listFileRawData.filter(x => _toLower(x.name).includes(_toLower(searchText))) // mockFileList --> rawData //pending
           return;
         }
-        this.mockFileListFilteredBySearchText = MOCK_DATA
+        this.mockFileListFilteredBySearchText = this.listFileRawData
       },
       getContextMenuItems(params) {
         var result = [
@@ -277,6 +253,31 @@
         ];
         return result;
       },
+      fetchFileList() {
+        let getFileListPayload = {
+          userId: this.userID
+        }
+        manageStorage.getListFileByUserId(getFileListPayload)
+          .then(res => {
+            if (res.data.status) {
+              this.listFileRawData = res.data.data.listFile
+              console.log(this.listFileRawData)
+              this.mockFileListFilteredBySearchText = this.listFileRawData.map(f => {
+                return {
+                  uploadTime: f.uploadTime,
+                  name: f.name,
+                  type: f.type,
+                  size: f.size
+                }
+              })
+              return
+            }
+            this.listFileRawData = []
+          })
+          .catch(err => {
+            console.log(err, 'server: getListFileByUserId')
+          })
+      }
     }
   };
 
