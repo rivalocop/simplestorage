@@ -42,6 +42,9 @@
   import dayjs from 'dayjs'
   import { RepositoryFactory } from "./../../repositories/repositoryFactory";
   const LoginRepository = RepositoryFactory.get("login");
+  const manageStorage = RepositoryFactory.get("manageStorage");
+  const qs = require('qs');
+  const FileDownload = require('js-file-download');
 
 
   const MOCK_DATA = [
@@ -75,8 +78,10 @@
       return {
         canShowDashboard: false,
         userName: 'user',
+        userID: null,
         files: '',
         uploadPercentage: null,
+        downloadPercentage: 0,
         gridOptions: null,
         gridApi: null,
         columnApi: null,
@@ -89,14 +94,39 @@
     },
     created() {
       this.userName = localStorage.getItem("userName");
+      this.userID = localStorage.getItem("userID")
       let payload = {
-        userID: localStorage.getItem("userID")
+        userID: this.userID
       }
       LoginRepository.checkUser(payload)
         .then(res => {
-          console.log(res)
           if (res.data.status) {
-            this.canShowDashboard = true
+            this.canShowDashboard = true;
+            axios.get(`https://minio-server-project.appspot.com/api/Buckets/${this.userID}`)
+            .then(res => {
+              if(!res.data.data) {// bucket name does not exist, then create it
+                let payload = JSON.stringify({
+                    bucketName: this.userID
+                  })
+                axios.post(`https://minio-server-project.appspot.com/api/Buckets`,
+                  payload,
+                  {
+                    headers: {
+                     'Content-Type': 'application/json'
+                    }
+                  },
+                )
+                .then(res => {
+                  console.log(res, 'create bucket successfully')//create successfully
+                })
+                .catch(err => {
+                  console.log(err,'Create bucket failed!!');
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err, 'check bucket failed');
+            });
           } else {
             localStorage.removeItem('userID');
             localStorage.removeItem('userName');
@@ -106,6 +136,17 @@
         .catch(err => {
           this.$router.push('SignIn')
         });
+
+      let getFileListPayload = {
+        userId: this.userID
+      }
+      manageStorage.getListFileByUserId(getFileListPayload)
+        .then(res => {
+          console.log(res)
+        })
+        .catch(err => {
+          console.log(err, 'server: getListFileByUserId')
+        })
       this.mockFileListFilteredBySearchText = MOCK_DATA.map(f => {
         return {
           uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
@@ -116,17 +157,7 @@
       })
     },
     computed: {
-      // mockFileListFilteredBySearchText() {
-      //   let result = rawData.map(f => {
-      //     return {
-      //       uploadTime: dayjs(f.uploadTime).format("DD-MM-YYYY"),
-      //       name: f.name,
-      //       type: f.type,
-      //       size: f.size
-      //     }
-      //   })
-      //   return result
-      // }
+
     },
     beforeMount() {
       this.gridOptions = {};
@@ -140,6 +171,14 @@
         {headerName: 'Type', field: 'type', width: 238, sortable: true},
       ]
     },
+    watch: {
+      uploadPercentage() {
+        console.log('uploading: ', this.uploadPercentage)
+      },
+      downloadPercentage() {
+        console.log('downloading: ', this.downloadPercentage)
+      }
+    },
     mounted() {
       this.gridApi = this.gridOptions.api;
       this.gridColumnApi = this.gridOptions.columnApi;
@@ -149,12 +188,10 @@
         debugger
         this.files = this.$refs.files.files;
         let formData = new FormData();
-        for( let i = 0; i < this.files.length; i++ ) {
-          let file = this.files[i];
-          formData.append('files[' + i + ']', file, file.name);
-        }
+        formData.append('Files', this.files[0]);
+        formData.append('bucketName', this.userID)
 
-        axios.post( '/multiple-files',// pending API upload
+        axios.post(`https://minio-server-project.appspot.com/api/MinioObjects/PostMultiObject`,// pending API upload
           formData,
           {
             headers: {
@@ -164,11 +201,36 @@
               this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ));
             }.bind(this)
           }
-        ).then(function(){
-          console.log('SUCCESS!!');
+        ).then(function() {
+          let insertFilePayload = {
+            userId: this.userID,
+            listFile : [
+              {
+                fileID: createID(),
+                name: this.files[0].name,
+                type: this.files[0].type,
+                size: this.files[0].size,
+                uploadTime: dayjs(this.files[0].lastModified).format("DD-MM-YYYY"),
+              }
+            ]
+          }
+          this.$toasted.success('Upload successfully', 
+            {
+              position: 'top-center',
+              duration: 2000,
+              singleton: true
+            })
+            return;
+          // manageStorage.insertFile(insertFilePayload)
+          //   .then(res => {
+          //     console.log(res)
+          //   })
+          //   .catch(err => {
+          //     console.log('Binh: failed')
+          //   })
         })
-        .catch(function(){
-          console.log('FAILURE!!');
+        .catch(err => {
+          console.log(err, 'FAILURE!!');
         });
       },
       onChangeSearchText(searchText) {
@@ -184,7 +246,24 @@
           {
             name: `Download`,
             action: function() {
-              window.alert("Download pending");
+              axios.get(`https://minio-server-project.appspot.com/api/MinioObjects/GetObject?bucketName=5de9cbf9569b0302711b498b&objectName=ThuanTheoYTroi-BuiAnhTuan-6150266.mp3`,// pending API upload
+                {
+                  responseType: 'blob',
+                  headers: {
+                    'Content-Type': 'application/octet-stream',
+                    'Content-Disposition': 'attachment;filename=ThuanTheoYTroi-BuiAnhTuan-6150266.mp3',
+                  },
+                  onUploadProgress: function( progressEvent ) {
+                    this.downloadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ));
+                  }.bind(this)
+                }
+              ).then(function( res){
+                console.log('SUCCESS!!', res);
+                FileDownload(res.data, 'ThuanTheoYTroi-BuiAnhTuan-6150266.mp3');
+              })
+              .catch(function(){
+                console.log('FAILURE!!');
+              });
             },
             icon: '<i class="material-icons" style="font-size: 20px; color: #056eff">cloud_download</i>'
           },
@@ -203,6 +282,13 @@
 
   function createFlagImg(flag) {
     return '<img border="0" width="15" height="10" src="https://flags.fmcdn.net/data/flags/mini/' + flag + '.png"/>';
+  }
+
+  function createID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 </script>
 <style lang="scss">
