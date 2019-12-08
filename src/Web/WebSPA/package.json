@@ -21,6 +21,7 @@
     "bootstrap-vue": "^2.0.0-rc.13",
     "dayjs": "^1.8.17",
     "jquery": "^3.4.1",
+    "js-file-download": "^0.4.8",
     "material-design-icons": "^3.0.1",
     "popper.js": "^1.14.6",
     "sass-loader": "^7.1.0",

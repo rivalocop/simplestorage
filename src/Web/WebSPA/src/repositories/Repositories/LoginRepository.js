@@ -3,7 +3,7 @@ const qs = require('qs');
 
 export default {
   login (payload) {
-    return Repository.post(`login`, 
+    return Repository.post(`users/login`, 
       qs.stringify({
         name: payload.name,
         password: payload.password
@@ -11,7 +11,7 @@ export default {
     )
   },
   register (payload) {
-    return Repository.post(`register`,
+    return Repository.post(`users/register`,
       qs.stringify({
         name: payload.userName,
         password: payload.password,
@@ -20,14 +20,14 @@ export default {
     )
   },
   loginWithGmail (payload) {
-    return Repository.post(`loginGmail`,
+    return Repository.post(`users/loginGmail`,
       qs.stringify({
         email: payload.email
       })
     )
   },
   checkUser (payload) {
-    return Repository.post(`checkUser`,
+    return Repository.post(`users/checkUser`,
       qs.stringify({
         id: payload.userID
       })
