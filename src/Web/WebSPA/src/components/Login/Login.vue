@@ -156,7 +156,7 @@ export default {
     },
     register() {
       let payload = {
-        name: this.userNameRegister,
+        userName: this.userNameRegister,
         password: this.passwordRegister,
         email: this.mailRegister
       };
