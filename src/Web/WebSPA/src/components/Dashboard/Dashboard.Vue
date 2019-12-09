@@ -11,7 +11,7 @@
         class="upload-to-cloud-button"
         name="backup"/>
       <p class="upload-to-cloud-content">File Upload</p>
-      <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()"/>
+      <input type="file" id="files" ref="files" v-on:change="handleFilesUpload()"/>
     </span>
 
     <div class="main-content">
@@ -143,6 +143,9 @@
     mounted() {
       this.gridApi = this.gridOptions.api;
       this.gridColumnApi = this.gridOptions.columnApi;
+      this.gridOptions.context = {
+          thisComponent : this
+      };
     },
     methods: {
       handleFilesUpload() {
@@ -222,20 +225,24 @@
           {
             name: `Download`,
             action: function() {
-              axios.get(`https://minio-server-project.appspot.com/api/MinioObjects/GetObject?bucketName=5de9cbf9569b0302711b498b&objectName=ThuanTheoYTroi-BuiAnhTuan-6150266.mp3`,// pending API upload
+              let self = params.context.thisComponent
+              let fileName = self.mockFileListFilteredBySearchText[params.node.rowIndex].name
+              let uri = `https://minio-server-project.appspot.com/api/MinioObjects/GetObject?bucketName=${self.userID}&objectName=${fileName}`
+              let headerCustom = {
+                    'Content-Type': 'application/octet-stream',
+                    'Content-Disposition': 'attachment;filename='+fileName,
+                  }
+              axios.get(uri,// pending API upload
                 {
                   responseType: 'blob',
-                  headers: {
-                    'Content-Type': 'application/octet-stream',
-                    'Content-Disposition': 'attachment;filename=ThuanTheoYTroi-BuiAnhTuan-6150266.mp3',
-                  },
+                  headers: headerCustom,
                   onUploadProgress: function( progressEvent ) {
                     this.downloadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ));
                   }.bind(this)
                 }
               ).then(function( res){
                 console.log('SUCCESS!!', res);
-                FileDownload(res.data, 'ThuanTheoYTroi-BuiAnhTuan-6150266.mp3');
+                FileDownload(res.data, fileName);
               })
               .catch(function(){
                 console.log('FAILURE!!');
@@ -246,6 +253,8 @@
           {
             name: "Remove",
             action: function() {
+              let self = params.context.thisComponent
+              console.log(self.mockFileListFilteredBySearchText[params.node.rowIndex].name)
               window.alert("Delete pending");
             },
             icon: '<i class="material-icons" style="font-size: 24px; color: red">delete_forever</i>',
