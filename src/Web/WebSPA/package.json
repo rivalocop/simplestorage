@@ -16,7 +16,7 @@
     "ag-grid": "^18.1.2",
     "ag-grid-community": "^22.0.0",
     "ag-grid-enterprise": "^22.0.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.13",
     "dayjs": "^1.8.17",
