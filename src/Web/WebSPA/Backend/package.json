@@ -16,7 +16,7 @@
     "airtable": "^0.6.0",
     "archiver": "^3.0.0",
     "body-parser": "^1.18.3",
-    "config": "^3.1.0",
+    "config": "^3.3.8",
     "connect-busboy": "0.0.2",
     "consolidate": "^0.15.1",
     "cryptlib": "^1.0.3",
